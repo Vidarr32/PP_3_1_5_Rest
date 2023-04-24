@@ -15,8 +15,8 @@
 <!--Шапка-->
 <div>
     <nav class="navbar navbar-dark bg-dark mb-3">
-        <div><span th:text="${activeUser.getEmail()}" class="navbar-brand font-weight-bold mr-0">Username</span>
-            <span th:text="'with roles: '+ ${activeUser.roleToString()}" class="navbar-brand">role</span>
+        <div><span class="navbar-brand font-weight-bold mr-0" id="head-username"></span>
+            <span class="navbar-brand" id="head-role">with roles: </span>
         </div>
         <ul class="navbar-nav justify-content-end">
             <li class="nav-item">
@@ -54,15 +54,7 @@
                                     <th scope="col">Role</th>
                                 </tr>
                                 </thead>
-                                <tbody>
-                                <tr>
-                                    <td th:text="${activeUser.getId()}">ID</td>
-                                    <td th:text="${activeUser.getName()}">Name</td>
-                                    <td th:text="${activeUser.getLastname()}">Last name</td>
-                                    <td th:text="${activeUser.getAge()}">Age</td>
-                                    <td th:text="${activeUser.getEmail()}">email</td>
-                                    <td th:text="${activeUser.roleToString()}">role</td>
-                                </tr>
+                                <tbody id="user-info">
                                 </tbody>
                             </table>
                         </div>
@@ -83,5 +75,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+
+<script src="/user.js"></script>
 </body>
 </html>

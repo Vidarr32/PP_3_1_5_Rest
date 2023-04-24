@@ -1,55 +1,69 @@
 package ru.kata.spring.boot_security.demo.controller;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.kata.spring.boot_security.demo.dto.UserDTO;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.servise.RolesService;
 import ru.kata.spring.boot_security.demo.servise.UsersService;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/api/admin")
 public class AdminController {
 
     private final UsersService userService;
-    private final RolesService rolesService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public AdminController(UsersService userService, RolesService rolesService) {
+    public AdminController(UsersService userService, ModelMapper modelMapper) {
         this.userService = userService;
-        this.rolesService = rolesService;
+        this.modelMapper = modelMapper;
     }
 
-    @GetMapping
-    public String show(Principal principal, ModelMap model) {
-        model.addAttribute("activeUser", userService.findByUsername(principal.getName()));
-        model.addAttribute("users", userService.getAllUsers());
-        model.addAttribute("allroles", rolesService.getAllRoles());
-        model.addAttribute("newuser", new User());
-        return "admin";
+    @GetMapping({"/userinfo"})
+    public UserDTO showUserInfo(Principal principal) {
+        return convertToUserDTO(userService.findByUsername(principal.getName()));
     }
 
-    @PostMapping
-    public String createUser(@ModelAttribute("newuser") User user) {
-        userService.saveUser(user);
-        return "redirect:/admin";
+    @GetMapping("/users")
+    public List<UserDTO> showAllUsers() {
+        return userService.getAllUsers().stream().map(this::convertToUserDTO).collect(Collectors.toList());
     }
 
-    @PatchMapping("/{id}")
-    public String updateUser(@ModelAttribute("edituser") User user, @PathVariable("id") long id) {
-        System.out.println(user.toString());
-        User user1 = userService.getUserById(id);
-        System.out.println(user1);
-        userService.updateUser(id, user);
-        return "redirect:/admin";
+    @GetMapping("/users/{id}")
+    public UserDTO showUserById(@PathVariable("id") long id) {
+        return convertToUserDTO(userService.getUserById(id));
     }
 
-    @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable("id") long id) {
+    @PostMapping("/users")
+    public ResponseEntity<HttpStatus> createUser(@RequestBody UserDTO userDTO) {
+        userService.saveUser(convertToUser(userDTO));
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PatchMapping("/users/{id}")
+    public ResponseEntity<HttpStatus> updateUser(@RequestBody UserDTO userDTO, @PathVariable("id") long id) {
+        userService.updateUser(id, convertToUser(userDTO));
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") long id) {
         userService.deleteUser(id);
-        return "redirect:/admin";
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    private User convertToUser(UserDTO userDTO) {
+        return modelMapper.map(userDTO, User.class);
+    }
+
+    private UserDTO convertToUserDTO(User user) {
+        return modelMapper.map(user, UserDTO.class);
     }
 }

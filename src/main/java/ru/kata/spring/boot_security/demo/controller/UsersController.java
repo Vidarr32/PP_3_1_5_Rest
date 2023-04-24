@@ -1,32 +1,37 @@
 package ru.kata.spring.boot_security.demo.controller;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.servise.RolesService;
+import ru.kata.spring.boot_security.demo.dto.UserDTO;
+import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.servise.UsersService;
 
 import java.security.Principal;
 
 
-@Controller
-@RequestMapping
+@RestController
+@RequestMapping("/api/user")
 public class UsersController {
 
     private final UsersService userService;
-    private final RolesService rolesService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public UsersController(UsersService userService, RolesService rolesService) {
+    public UsersController(UsersService userService, ModelMapper modelMapper) {
         this.userService = userService;
-        this.rolesService = rolesService;
+        this.modelMapper = modelMapper;
+    }
+    @GetMapping({"/userinfo"})
+    public UserDTO showUserInfo(Principal principal) {
+        return convertToUserDTO(userService.findByUsername(principal.getName()));
     }
 
-    @GetMapping({"/user"})
-    public String showUserInfo(Principal principal, ModelMap model) {
-        model.addAttribute("activeUser", userService.findByUsername(principal.getName()));
-        model.addAttribute("allroles", rolesService.getAllRoles());
-        return "user";
+    private User convertToUser(UserDTO userDTO) {
+        return modelMapper.map(userDTO, User.class);
+    }
+
+    private UserDTO convertToUserDTO(User user) {
+        return modelMapper.map(user, UserDTO.class);
     }
 }
